@@ -2,7 +2,7 @@ import pygame
 import time
 import random
 
-
+print("hello")
 
 pygame.init()
 
