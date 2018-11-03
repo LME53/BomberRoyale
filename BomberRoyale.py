@@ -38,40 +38,47 @@ clock = pygame.time.Clock()
 gameDisplay = pygame.display.set_mode((display_width,display_height))
 pygame.display.set_caption("BomberMan")
 
+def create_obst(x, y):
+     Rect = pygame.Rect(x, y, block_size, block_size)
+     Obst.append(Rect)
 
-
-def draw_obst(x, y):
-    Rect = pygame.Rect(x, y, block_size, block_size)
-    Obst.append(Rect)
-    pygame.draw.rect(gameDisplay, black, Rect)
-
-def draw_grid():
-    gameDisplay.fill(green)
+def create_grid():
+    for x in range(0, display_width, block_size):
+        create_obst(x, 0)
 
     for x in range(0, display_width, block_size):
-        draw_obst(x, 0)
-
-    for x in range(0, display_width, block_size):
-        draw_obst(x, display_height - block_size)
+        create_obst(x, display_height - block_size)
 
     for y in range(0, display_height, block_size):
-        draw_obst(0, y)
+        create_obst(0, y)
 
     for y in range(0, display_height, block_size):
-        draw_obst(display_width - block_size, y)
+        create_obst(display_width - block_size, y)
     
     
     for x in range(2 * block_size, display_width - 2 * block_size, 2 * block_size):
 
         for y in range(2 * block_size, display_height - 2 * block_size, 2 * block_size):
-            draw_obst(x, y)
+            create_obst(x, y)
+
+   
+
+
+def draw_obst(rect):
+    pygame.draw.rect(gameDisplay, black, rect)
+
+def draw_grid():
+    gameDisplay.fill(green)
+    for part in Obst:
+        draw_obst(part)
 
             
 
 def gameLoop():
 
     
-    
+    create_grid()
+   
 
     gameExit = False
 
