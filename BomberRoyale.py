@@ -24,7 +24,6 @@ display_width = 17 * block_size
 display_height = 15 * block_size
 
 
-player = None
     
 
 
