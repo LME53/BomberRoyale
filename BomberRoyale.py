@@ -9,10 +9,12 @@ pygame.init()
 red = (255,0,0)
 black = (0, 0, 0)
 green = (143,188,143)
+light_brown = (182, 155, 76)
 
 bombimage = pygame.image.load("Vesipal.png")
 
 Obst = []
+Boxes = []
 
 
 block_size = 35
@@ -25,8 +27,7 @@ display_width = 17 * block_size
 display_height = 15 * block_size
 
 
-player = None
-    
+empty_square_percentage = 0.2
 
 
 
@@ -40,37 +41,77 @@ clock = pygame.time.Clock()
 gameDisplay = pygame.display.set_mode((display_width,display_height))
 pygame.display.set_caption("BomberMan")
 
-
-
-
-
-
-
-def draw_obst(x, y):
+def create_obst(x, y):
+     Rect = pygame.Rect(x, y, block_size, block_size)
+     Obst.append(Rect)
+      
+def create_box(x, y):
     Rect = pygame.Rect(x, y, block_size, block_size)
-    Obst.append(Rect)
-    pygame.draw.rect(gameDisplay, black, Rect)
+    Boxes.append(Rect)
 
-def draw_grid():
-    gameDisplay.fill(green)
+def get_possible_box_locations():
+    locations = []
+    for x in range(0, display_width, block_size):
+        for y in range(0, display_height, block_size):
+            locations.append((x, y))
+    for part in Obst:
+        if (part.x, part.y) in locations:
+            locations.remove((part.x, part.y))
+
+    # Remove player starting locations and adjacent squares
+    locations.remove((block_size, block_size))
+    locations.remove((2 * block_size, block_size))
+    locations.remove((block_size, 2 * block_size))
+    locations.remove((display_width - 2 * block_size, block_size))
+    locations.remove((display_width - 3 * block_size, block_size))
+    locations.remove((display_width - 2 * block_size, 2 * block_size))
+    locations.remove((block_size, display_height - 2 * block_size))
+    locations.remove((2 * block_size, display_height - 2 * block_size))
+    locations.remove((block_size, display_height - 3 * block_size))
+    locations.remove((display_width - 2 * block_size, display_height - 2 * block_size))
+    locations.remove((display_width - 3 * block_size, display_height - 2 * block_size))
+    locations.remove((display_width - 2 * block_size, display_height - 3 * block_size))
+    return(locations)
+
+def create_grid():
+    for x in range(0, display_width, block_size):
+        create_obst(x, 0)
 
     for x in range(0, display_width, block_size):
-        draw_obst(x, 0)
-
-    for x in range(0, display_width, block_size):
-        draw_obst(x, display_height - block_size)
+        create_obst(x, display_height - block_size)
 
     for y in range(0, display_height, block_size):
-        draw_obst(0, y)
+        create_obst(0, y)
 
     for y in range(0, display_height, block_size):
-        draw_obst(display_width - block_size, y)
+        create_obst(display_width - block_size, y)
     
     
     for x in range(2 * block_size, display_width - 2 * block_size, 2 * block_size):
 
         for y in range(2 * block_size, display_height - 2 * block_size, 2 * block_size):
-            draw_obst(x, y)
+            create_obst(x, y)
+
+    locations = get_possible_box_locations()
+    for i in range(int(empty_square_percentage * len(locations))):
+            locations.pop(random.randint(0, len(locations) - 1))
+    for (x, y) in locations:
+        create_box(x, y) 
+
+
+def draw_obst(rect):
+    pygame.draw.rect(gameDisplay, black, rect)
+
+def draw_box(rect):
+    pygame.draw.rect(gameDisplay, light_brown, rect)
+
+def draw_grid():
+    gameDisplay.fill(green)
+    for part in Obst:
+        draw_obst(part)
+    for part in Boxes:
+        draw_box(part)
+            
 
 
 class Bomb(object):
@@ -92,20 +133,18 @@ class Bomb(object):
 
     def draw(self, screen):
         screen.blit(bombimage,(self.posX-0.5*bombimage.get_rect().width, self.posY-0.5*bombimage.get_rect().height))
-
-
-
       
 
 def gameLoop():
 
     
-    
+    create_grid()
+   
 
     gameExit = False
 
-    lead_x = display_width / 2
-    lead_y = display_height / 2
+    lead_x = block_size + block_size / 2
+    lead_y = block_size + block_size / 2
 
     lead_x_change = 0
     lead_y_change = 0
@@ -189,7 +228,7 @@ def gameLoop():
         player = pygame.Rect(lead_x,lead_y, 15, 15)
         
 
-        for part in Obst:
+        for part in Obst + Boxes:
             if player.colliderect(part):
                 
                 if lead_x_change > 0:
