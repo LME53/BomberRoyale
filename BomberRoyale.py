@@ -1,6 +1,7 @@
 import pygame
 import time
 import random
+import math
 
 print("hello")
 
@@ -12,12 +13,14 @@ green = (143,188,143)
 light_brown = (182, 155, 76)
 
 bombimage = pygame.image.load("Vesipal.png")
+playerimage = pygame.image.load("Playerpepe.png")
+
 
 Obst = []
 Boxes = []
 
 
-block_size = 35
+block_size = 40
 
 
 
@@ -116,8 +119,8 @@ def draw_grid():
 
 class Bomb(object):
     def __init__(self, aposX, aposY, bombRange=5):
-        self.posX = aposX 
-        self.posY = aposY
+        self.posX = roundbomb(aposX) 
+        self.posY = roundbomb(aposY)
         self.bombRange = bombRange
         self.timeToExplode = 3000
 
@@ -126,14 +129,18 @@ class Bomb(object):
         self.timeToExplode -= dt
 
     def explode(self, screen):
-        pygame.draw.line(screen,(135,206,250),(self.posX,self.posY),(self.posX+block_size/2+(block_size*self.bombRange),self.posY),block_size)
-        pygame.draw.line(screen,(135,206,250),(self.posX,self.posY),(self.posX-block_size/2-(block_size*self.bombRange),self.posY),block_size)
-        pygame.draw.line(screen,(135,206,250),(self.posX,self.posY),(self.posX,self.posY+block_size/2+(block_size*self.bombRange)),block_size)
-        pygame.draw.line(screen,(135,206,250),(self.posX,self.posY),(self.posX,self.posY-block_size/2-(block_size*self.bombRange)),block_size)
+        pygame.draw.line(screen,(135,206,250),(self.posX,self.posY-1),(self.posX+block_size/2+(block_size*self.bombRange),self.posY-1),round(block_size*0.75))
+        pygame.draw.line(screen,(135,206,250),(self.posX,self.posY-1),(self.posX-block_size/2-(block_size*self.bombRange),self.posY-1),round(block_size*0.75))
+        pygame.draw.line(screen,(135,206,250),(self.posX-1,self.posY),(self.posX-1,self.posY+block_size/2+(block_size*self.bombRange)),round(block_size*0.75))
+        pygame.draw.line(screen,(135,206,250),(self.posX-1,self.posY),(self.posX-1,self.posY-block_size/2-(block_size*self.bombRange)),round(block_size*0.75))
 
     def draw(self, screen):
         screen.blit(bombimage,(self.posX-0.5*bombimage.get_rect().width, self.posY-0.5*bombimage.get_rect().height))
       
+def roundbomb(i):
+     return round((i-block_size/2)/block_size)*block_size+block_size/2
+
+
 
 def gameLoop():
 
@@ -143,8 +150,8 @@ def gameLoop():
 
     gameExit = False
 
-    lead_x = block_size + block_size / 2
-    lead_y = block_size + block_size / 2
+    lead_x = block_size
+    lead_y = block_size
 
     lead_x_change = 0
     lead_y_change = 0
@@ -225,7 +232,8 @@ def gameLoop():
         
 
         
-        player = pygame.Rect(lead_x,lead_y, 15, 15)
+        player = pygame.Rect(lead_x,lead_y, playerimage.get_rect().width, playerimage.get_rect().height)
+        
         
 
         for part in Obst + Boxes:
@@ -243,25 +251,9 @@ def gameLoop():
         lead_x = player.x
         lead_y = player.y
         
-        pygame.draw.rect(gameDisplay, red, player)
-
-
-
-###                
-##
-##                # Game logic.
-##                
-##
-##                # Update bombs. Pass the `dt` to the bomb instances.
-##                
-##
-##                # Remove bombs fromt the bomb_set.
-##                
-##
-##                # Draw everything.
-##                
-       
         
+
+        gameDisplay.blit(playerimage,(player.x, player.y))
 
         
         pygame.display.update()
