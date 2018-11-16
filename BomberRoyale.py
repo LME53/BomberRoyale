@@ -11,6 +11,7 @@ black = (0, 0, 0)
 green = (143,188,143)
 light_brown = (182, 155, 76)
 
+bombimage = pygame.image.load("Vesipal.png")
 
 Obst = []
 Boxes = []
@@ -112,6 +113,28 @@ def draw_grid():
         draw_box(part)
             
 
+
+class Bomb(object):
+    def __init__(self, aposX, aposY, bombRange=5):
+        self.posX = aposX 
+        self.posY = aposY
+        self.bombRange = bombRange
+        self.timeToExplode = 3000
+
+    def update(self, dt):
+        # Subtract the passed time `dt` from the timer each frame.
+        self.timeToExplode -= dt
+
+    def explode(self, screen):
+        pygame.draw.line(screen,(135,206,250),(self.posX,self.posY),(self.posX+block_size/2+(block_size*self.bombRange),self.posY),block_size)
+        pygame.draw.line(screen,(135,206,250),(self.posX,self.posY),(self.posX-block_size/2-(block_size*self.bombRange),self.posY),block_size)
+        pygame.draw.line(screen,(135,206,250),(self.posX,self.posY),(self.posX,self.posY+block_size/2+(block_size*self.bombRange)),block_size)
+        pygame.draw.line(screen,(135,206,250),(self.posX,self.posY),(self.posX,self.posY-block_size/2-(block_size*self.bombRange)),block_size)
+
+    def draw(self, screen):
+        screen.blit(bombimage,(self.posX-0.5*bombimage.get_rect().width, self.posY-0.5*bombimage.get_rect().height))
+      
+
 def gameLoop():
 
     
@@ -129,8 +152,13 @@ def gameLoop():
     speed = 2.5
 
 
+    bomb_set = set()
+
+
     while not gameExit:
 
+
+        dt = clock.tick(FPS)
         draw_grid()
 
         
@@ -159,12 +187,36 @@ def gameLoop():
                     direction = "down"
                     lead_y_change = speed
                     lead_x_change = 0
+                    
+                elif event.key == pygame.K_x:
+                    bomb_set.add(Bomb(*player.center))
 
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                     lead_x_change = 0
                 if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
                     lead_y_change = 0
+
+
+        to_remove = set()
+        
+        for bomb in bomb_set:
+            bomb.update(dt)
+            # Add old bombs to the to_remove set.
+            if bomb.timeToExplode <= -1000:
+                to_remove.add(bomb)
+
+        if to_remove:
+            bomb_set -= to_remove
+
+        
+
+        for bomb in bomb_set:
+            bomb.draw(gameDisplay)
+            # I'm just drawing the explosion lines each
+            # frame when the time is below 0.
+            if bomb.timeToExplode <= 0:
+                bomb.explode(gameDisplay)
 
 
         lead_y += lead_y_change
@@ -192,96 +244,31 @@ def gameLoop():
         lead_y = player.y
         
         pygame.draw.rect(gameDisplay, red, player)
-                    
-        class Bomb(object):
-    def __init__(self, aposX, aposY, bombRange=5):
-        self.posX = aposX 
-        self.posY = aposY
-        self.bombRange = bombRange
-        self.timeToExplode = 3000
-
-    def update(self, dt):
-        # Subtract the passed time `dt` from the timer each frame.
-        self.timeToExplode -= dt
-
-    def explode(self, screen):
-        pygame.draw.line(screen,(200,0,0),(self.posX,self.posY),(self.posX+20+(40*self.bombRange),self.posY),40)
-        pygame.draw.line(screen,(200,0,0),(self.posX,self.posY),(self.posX-20-(40*self.bombRange),self.posY),40)
-        pygame.draw.line(screen,(200,0,0),(self.posX,self.posY),(self.posX,self.posY+20+(40*self.bombRange)),40)
-        pygame.draw.line(screen,(200,0,0),(self.posX,self.posY),(self.posX,self.posY-20-(40*self.bombRange)),40)
-
-    def draw(self, screen):
-        pygame.draw.circle(screen,(200,0,0),(self.posX,self.posY),20)
 
 
-def main():
-    screen = pygame.display.set_mode((640, 480))
-    clock = pygame.time.Clock()
-    bomb_set = set()  # This set holds the bomb instances.
 
-    done = False
-
-    while not done:
-        # Get the passed time since last clock.tick call.
-        dt = clock.tick(30)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                done = True
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_x:
-                    bomb_set.add(Bomb(*player.center))
-
-        # Game logic.
-        to_remove = set()
-
-        # Update bombs. Pass the `dt` to the bomb instances.
-        for bomb in bomb_set:
-            bomb.update(dt)
-            # Add old bombs to the to_remove set.
-            if bomb.timeToExplode <= -3000:
-                to_remove.add(bomb)
-
-        # Remove bombs fromt the bomb_set.
-        if to_remove:
-            bomb_set -= to_remove
-
-        # Draw everything.
-        screen.fill((30, 30, 30))
-        for bomb in bomb_set:
-            bomb.draw(screen)
-            # I'm just drawing the explosion lines each
-            # frame when the time is below 0.
-            if bomb.timeToExplode <= 0:
-                bomb.explode(screen)
-
-        pygame.display.flip()
-
+###                
+##
+##                # Game logic.
+##                
+##
+##                # Update bombs. Pass the `dt` to the bomb instances.
+##                
+##
+##                # Remove bombs fromt the bomb_set.
+##                
+##
+##                # Draw everything.
+##                
        
         
 
         
         pygame.display.update()
 
-        clock.tick(FPS)
+        
 
 gameLoop()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
